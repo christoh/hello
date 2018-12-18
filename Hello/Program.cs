@@ -9,7 +9,6 @@ using Hello.Wpf.Apps;
 using Hello.Wpf.Converters;
 using Hello.Wpf.Views;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -385,7 +384,7 @@ namespace Hello
                                 tokenSource.Token))
                             {
                                 throw new TimeoutException(
-                                    $"Could not retrieve {nameof(helloWorldPropertyName)} with in {timeout:g} seconds.");
+                                    $"Could not retrieve {nameof(helloWorldPropertyName)} within {timeout:g} seconds.");
                             }
                         }
                         catch (Exception exception) when (exception is OperationCanceledException)
@@ -574,9 +573,9 @@ namespace Hello
             static HelloWorldService()
             {
                 helloWorldText = "Hello, World!";
-                var concurrentDictionary = new ConcurrentDictionary<TextId, string>();
-                ((IDictionary<TextId, string>)concurrentDictionary).Add(TextId.HelloWorldTextId, helloWorldText);
-                textDictionary = concurrentDictionary;
+                var dictionary = new Dictionary<TextId, string>();
+                ((IDictionary<TextId, string>)dictionary).Add(TextId.HelloWorldTextId, helloWorldText);
+                textDictionary = dictionary;
                 helloWorldConverter = new HelloWorldStringToStringConverter();
                 helloWorldModelToStringConverter=new HelloWorldModelToStringConverter();
             }
