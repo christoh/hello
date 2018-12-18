@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 #region AssemblyAttributes
@@ -201,7 +202,7 @@ namespace Hello
         public sealed class HelloWorldAttribute : Attribute { }
     }
 
-    namespace ProgramEntry
+    namespace Bootloader
     {
         internal class Program
         {
@@ -269,7 +270,7 @@ namespace Hello
                         throw new HelloWorldException(null, HelloWorldExceptionReturnCode.NoWindowClass, null);
                     }
 
-                    var helloWindow = (HelloWindow)Activator.CreateInstance
+                    var helloWindow = Activator.CreateInstance
                     (
                         AppDomain.CurrentDomain,
                         Assembly.GetExecutingAssembly().GetName().Name,
@@ -286,6 +287,8 @@ namespace Hello
                         UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
                         Converter = await HelloWorldService.GetHelloWorldModelToStringConverter(),
                         ConverterCulture = CultureInfo.CurrentCulture,
+                        FallbackValue = "Binding Error!",
+                        ValidatesOnExceptions = true,
                     };
 
                     var helloWindowDependencyPropertyField = typeof(HelloWindow)
@@ -299,7 +302,7 @@ namespace Hello
 
                     var helloWindowDependencyProperty = (DependencyProperty)helloWindowDependencyPropertyField.GetValue(null);
 
-                    typeof(HelloWindow)
+                    typeof(FrameworkElement)
                         .GetMethods()
                         .AsParallel()
                         .Single
@@ -309,15 +312,15 @@ namespace Hello
                                 var name = m.Name;
                                 var parameters = m.GetParameters();
 
-                                return name == nameof(HelloWindow.SetBinding) &&
+                                return name == nameof(FrameworkElement.SetBinding) &&
                                           parameters.Length == 2 &&
                                           parameters[1].ParameterType == typeof(BindingBase);
                             }
                         )
                         ?.Invoke(helloWindow, new object[] { helloWindowDependencyProperty, binding });
 
-                    typeof(HelloWindow)
-                        .GetMethod(nameof(HelloWindow.ShowDialog))?
+                    typeof(Window)
+                        .GetMethod(nameof(Window.ShowDialog))?
                         .Invoke(helloWindow, null);
                 }
             }
@@ -355,17 +358,17 @@ namespace Hello
                         );
                     }
 
-                    var viewBoxMargin = new Thickness(10, 0, 10, 3);
-                    var viewBox = new Viewbox();
+                    var viewBoxMargin = Activator.CreateInstance(typeof(Thickness), new object[] { 10d, 0d, 10d, 3d }, null);
+                    var viewBox = (DependencyObject)Activator.CreateInstance(typeof(Viewbox), null, null);
 
-                    GetDependencyProperty(viewBox, nameof(viewBox.Stretch)).SetValue(viewBox, Stretch.Uniform);
-                    GetDependencyProperty(viewBox, nameof(viewBox.Margin)).SetValue(viewBox, viewBoxMargin);
+                    GetDependencyProperty(viewBox, nameof(Viewbox.Stretch)).SetValue(viewBox, Stretch.Uniform);
+                    GetDependencyProperty(viewBox, nameof(Margin)).SetValue(viewBox, viewBoxMargin);
 
-                    textBlock = new TextBlock();
+                    textBlock = Activator.CreateInstance<TextBlock>();
                     GetDependencyProperty(textBlock, nameof(textBlock.DataContext)).SetValue(textBlock, this);
 
-                    Content = viewBox;
-                    viewBox.Child = textBlock;
+                    ((IAddChild)this).AddChild(viewBox);
+                    ((IAddChild)viewBox).AddChild(textBlock);
                     var helloWorldPropertyName = default(string);
 
                     using (var tokenSource = new CancellationTokenSource())
@@ -378,13 +381,18 @@ namespace Hello
                                 tokenSource.Token.ThrowIfCancellationRequested();
                             }, tokenSource.Token);
 
-                            var timeout = new TimeSpan(0, 0, 10);
+                            var timeout = (TimeSpan)Activator.CreateInstance(typeof(TimeSpan), new object[] { 0, 0, 10 }, null);
 
-                            if (!helloWorldPropertyNameRetrievalTask.Wait((int)Math.Round(timeout.TotalMilliseconds),
-                                tokenSource.Token))
+                            if (!helloWorldPropertyNameRetrievalTask.Wait
+                            (
+                                    (int)Math.Round(timeout.TotalMilliseconds),
+                                    tokenSource.Token
+                            ))
                             {
-                                throw new TimeoutException(
-                                    $"Could not retrieve {nameof(helloWorldPropertyName)} within {timeout:g} seconds.");
+                                throw new TimeoutException
+                                (
+                                    $"Could not retrieve {nameof(helloWorldPropertyName)} within {timeout:g}"
+                                );
                             }
                         }
                         catch (Exception exception) when (exception is OperationCanceledException)
@@ -401,13 +409,15 @@ namespace Hello
 
                     Loaded += async (sender, routedEventArgs) =>
                     {
-                        var binding = new Binding(helloWorldPropertyName)
+                        BindingBase binding = new Binding(helloWorldPropertyName)
                         {
                             Source = this,
                             Mode = BindingMode.OneWay,
                             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
                             Converter = await HelloWorldApp.HelloWorldService.GetHelloWorldStringToStringConverter(),
                             ConverterCulture = CultureInfo.CurrentCulture,
+                            ValidatesOnExceptions = true,
+                            FallbackValue = "Binding Error",
                         };
 
                         textBlock.SetBinding(TextBlock.TextProperty, binding);
@@ -577,7 +587,7 @@ namespace Hello
                 ((IDictionary<TextId, string>)dictionary).Add(TextId.HelloWorldTextId, helloWorldText);
                 textDictionary = dictionary;
                 helloWorldConverter = new HelloWorldStringToStringConverter();
-                helloWorldModelToStringConverter=new HelloWorldModelToStringConverter();
+                helloWorldModelToStringConverter = new HelloWorldModelToStringConverter();
             }
 
             public async Task<string> GetHelloWorldText()
