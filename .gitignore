@@ -1,0 +1,6 @@
+Hello/bin/*
+Hello/obj/*
+.vs/*
+*.exe
+*.obj
+*.dll
