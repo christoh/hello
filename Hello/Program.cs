@@ -53,149 +53,6 @@ namespace Hello
         }
     }
 
-    namespace Model
-    {
-        namespace Enums
-        {
-            public enum TextId
-            {
-                HelloWorldTextId,
-            }
-
-            public enum HelloWorldExceptionReturnCode
-            {
-                Success = 0,
-                PropertyNameRetrievalTaskCancelled = 1,
-                NoWindowClass = 2,
-            }
-        }
-
-        public abstract class PropertyChangeBase : INotifyPropertyChanged
-        {
-#pragma warning disable CS0067 // Handler used via reflection in SetProperty Extension
-            public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore CS0067
-        }
-
-        public class HelloWorldModel : PropertyChangeBase, IComparable<HelloWorldModel>, IComparable, ICloneable, IHaveReadOnlyDisplayName
-        {
-            private string displayName;
-
-            public HelloWorldModel(string displayName)
-            {
-                DisplayName = displayName;
-            }
-
-            public string DisplayName
-            {
-                get => displayName;
-
-                private set => this.SetProperty(ref displayName, value, preAction: () =>
-                {
-                    if (value == null)
-                    {
-                        throw new ArgumentNullException(nameof(DisplayName), "Cannot set to null");
-                    }
-                });
-            }
-
-            public override string ToString()
-            {
-                return DisplayName;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(this, obj))
-                {
-                    return true;
-                }
-
-                if (obj is HelloWorldModel other)
-                {
-                    return DisplayName.Equals(other.DisplayName);
-                }
-
-                return false;
-            }
-
-            public override int GetHashCode()
-            {
-                return DisplayName?.GetHashCode() ?? 0;
-            }
-
-            public object Clone()
-            {
-                return new HelloWorldModel(DisplayName);
-            }
-
-            public static bool operator ==(HelloWorldModel left, HelloWorldModel right)
-            {
-                return left is null ? right is null : EqualityComparer<HelloWorldModel>.Default.Equals(left, right);
-            }
-
-            public static bool operator !=(HelloWorldModel left, HelloWorldModel right)
-            {
-                return !(left == right);
-            }
-
-            public int CompareTo(HelloWorldModel other)
-            {
-                if (ReferenceEquals(this, other))
-                {
-                    return 0;
-                }
-
-                return other is null ? 1 : string.Compare(displayName, other.displayName, StringComparison.CurrentCulture);
-            }
-
-            public int CompareTo(object obj)
-            {
-                if (obj is null)
-                {
-                    return 1;
-                }
-
-                if (ReferenceEquals(this, obj))
-                {
-                    return 0;
-                }
-
-                return obj is HelloWorldModel other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(HelloWorldModel)}");
-            }
-
-            public static bool operator <(HelloWorldModel left, HelloWorldModel right)
-            {
-                return Comparer<HelloWorldModel>.Default.Compare(left, right) < 0;
-            }
-
-            public static bool operator >(HelloWorldModel left, HelloWorldModel right)
-            {
-                return Comparer<HelloWorldModel>.Default.Compare(left, right) > 0;
-            }
-
-            public static bool operator <=(HelloWorldModel left, HelloWorldModel right)
-            {
-                return Comparer<HelloWorldModel>.Default.Compare(left, right) <= 0;
-            }
-
-            public static bool operator >=(HelloWorldModel left, HelloWorldModel right)
-            {
-                return Comparer<HelloWorldModel>.Default.Compare(left, right) >= 0;
-            }
-
-            public static explicit operator string(HelloWorldModel helloWorldModel)
-            {
-                return helloWorldModel.DisplayName;
-            }
-
-            public static explicit operator HelloWorldModel(string value)
-            {
-                return new HelloWorldModel(value);
-            }
-        }
-    }
-
     namespace Attributes
     {
         [AttributeUsage(AttributeTargets.Field)]
@@ -235,7 +92,7 @@ namespace Hello
 
                     set => this.SetProperty(ref helloWorldModel, value, preAction: () =>
                     {
-                        if (value == null)
+                        if (value is null)
                         {
                             throw new ArgumentNullException
                             (
@@ -619,6 +476,149 @@ namespace Hello
                 IValueConverter result = null;
                 await Task.Run(() => result = helloWorldModelToStringConverter);
                 return result;
+            }
+        }
+    }
+
+    namespace Model
+    {
+        namespace Enums
+        {
+            public enum TextId
+            {
+                HelloWorldTextId,
+            }
+
+            public enum HelloWorldExceptionReturnCode
+            {
+                Success = 0,
+                PropertyNameRetrievalTaskCancelled = 1,
+                NoWindowClass = 2,
+            }
+        }
+
+        public abstract class PropertyChangeBase : INotifyPropertyChanged
+        {
+#pragma warning disable CS0067 // Handler used via reflection in SetProperty Extension
+            public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS0067
+        }
+
+        public class HelloWorldModel : PropertyChangeBase, IComparable<HelloWorldModel>, IComparable, ICloneable, IHaveReadOnlyDisplayName
+        {
+            private string displayName;
+
+            public HelloWorldModel(string displayName)
+            {
+                DisplayName = displayName;
+            }
+
+            public string DisplayName
+            {
+                get => displayName;
+
+                private set => this.SetProperty(ref displayName, value, preAction: () =>
+                {
+                    if (value == null)
+                    {
+                        throw new ArgumentNullException(nameof(DisplayName), "Cannot set to null");
+                    }
+                });
+            }
+
+            public override string ToString()
+            {
+                return DisplayName;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(this, obj))
+                {
+                    return true;
+                }
+
+                if (obj is HelloWorldModel other)
+                {
+                    return DisplayName.Equals(other.DisplayName);
+                }
+
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return DisplayName?.GetHashCode() ?? 0;
+            }
+
+            public object Clone()
+            {
+                return new HelloWorldModel(DisplayName);
+            }
+
+            public static bool operator ==(HelloWorldModel left, HelloWorldModel right)
+            {
+                return left is null ? right is null : EqualityComparer<HelloWorldModel>.Default.Equals(left, right);
+            }
+
+            public static bool operator !=(HelloWorldModel left, HelloWorldModel right)
+            {
+                return !(left == right);
+            }
+
+            public int CompareTo(HelloWorldModel other)
+            {
+                if (ReferenceEquals(this, other))
+                {
+                    return 0;
+                }
+
+                return other is null ? 1 : string.Compare(displayName, other.displayName, StringComparison.CurrentCulture);
+            }
+
+            public int CompareTo(object obj)
+            {
+                if (obj is null)
+                {
+                    return 1;
+                }
+
+                if (ReferenceEquals(this, obj))
+                {
+                    return 0;
+                }
+
+                return obj is HelloWorldModel other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(HelloWorldModel)}");
+            }
+
+            public static bool operator <(HelloWorldModel left, HelloWorldModel right)
+            {
+                return Comparer<HelloWorldModel>.Default.Compare(left, right) < 0;
+            }
+
+            public static bool operator >(HelloWorldModel left, HelloWorldModel right)
+            {
+                return Comparer<HelloWorldModel>.Default.Compare(left, right) > 0;
+            }
+
+            public static bool operator <=(HelloWorldModel left, HelloWorldModel right)
+            {
+                return Comparer<HelloWorldModel>.Default.Compare(left, right) <= 0;
+            }
+
+            public static bool operator >=(HelloWorldModel left, HelloWorldModel right)
+            {
+                return Comparer<HelloWorldModel>.Default.Compare(left, right) >= 0;
+            }
+
+            public static explicit operator string(HelloWorldModel helloWorldModel)
+            {
+                return helloWorldModel.DisplayName;
+            }
+
+            public static explicit operator HelloWorldModel(string value)
+            {
+                return new HelloWorldModel(value);
             }
         }
     }
